@@ -21,7 +21,7 @@
 #ifndef OV5640_REG_H
 #define OV5640_REG_H
 
-#include <cmsis_compiler.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

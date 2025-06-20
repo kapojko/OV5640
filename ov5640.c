@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ov5640.h"
 
+#define OV5640_SLAVE_ID_DEF 0x78
+
 /** @addtogroup BSP
   * @{
   */
@@ -90,7 +92,7 @@ static int32_t OV5640_Delay(OV5640_Object_t *pObj, uint32_t Delay);
   */
 int32_t OV5640_RegisterBusIO(OV5640_Object_t *pObj, OV5640_IO_t *pIO)
 {
-  int32_t ret;
+  int32_t ret = OV5640_OK;
 
   if (pObj == NULL)
   {
@@ -104,6 +106,7 @@ int32_t OV5640_RegisterBusIO(OV5640_Object_t *pObj, OV5640_IO_t *pIO)
     pObj->IO.WriteReg  = pIO->WriteReg;
     pObj->IO.ReadReg   = pIO->ReadReg;
     pObj->IO.GetTick   = pIO->GetTick;
+    pObj->IO.Delay     = pIO->Delay;
 
     pObj->Ctx.ReadReg  = OV5640_ReadRegWrap;
     pObj->Ctx.WriteReg = OV5640_WriteRegWrap;
@@ -112,10 +115,6 @@ int32_t OV5640_RegisterBusIO(OV5640_Object_t *pObj, OV5640_IO_t *pIO)
     if (pObj->IO.Init != NULL)
     {
       ret = pObj->IO.Init();
-    }
-    else
-    {
-      ret = OV5640_ERROR;
     }
   }
 
@@ -228,7 +227,7 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
     {OV5640_POLARITY_CTRL, 0x22},
     {OV5640_FORMAT_CTRL00, 0x6F},
     {OV5640_FORMAT_MUX_CTRL, 0x01},
-    {OV5640_JPG_MODE_SELECT, 0x03},
+    {OV5640_JPG_MODE_SELECT, 0x02}, // was 0x03
     {OV5640_JPEG_CTRL07, 0x04},
     {0x440e, 0x00},
     {0x460b, 0x35},
@@ -1004,8 +1003,10 @@ int32_t OV5640_ReadID(OV5640_Object_t *pObj, uint32_t *Id)
   int32_t ret;
   uint8_t tmp;
 
-  /* Initialize I2C */
-  pObj->IO.Init();
+  if (pObj->IO.Init != NULL) {
+    /* Initialize I2C */
+    pObj->IO.Init();
+  }
 
   /* Prepare the camera to be configured */
   tmp = 0x80;
@@ -2190,11 +2191,17 @@ int32_t OV5640_Stop(OV5640_Object_t *pObj)
   */
 static int32_t OV5640_Delay(OV5640_Object_t *pObj, uint32_t Delay)
 {
-  uint32_t tickstart;
-  tickstart = pObj->IO.GetTick();
-  while ((pObj->IO.GetTick() - tickstart) < Delay)
-  {
-  }
+    if (pObj->IO.Delay != NULL) {
+        pObj->IO.Delay(Delay);
+    } else if (pObj->IO.GetTick != NULL) {
+        uint32_t tickstart;
+        tickstart = pObj->IO.GetTick();
+        while ((pObj->IO.GetTick() - tickstart) < Delay)
+        {
+        }
+    } else {
+        return OV5640_ERROR;
+    }
   return OV5640_OK;
 }
 

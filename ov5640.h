@@ -45,6 +45,8 @@ extern "C" {
   * @{
   */
 
+#define OV5640_SLAVE_ID_DEF 0x78
+
 typedef int32_t (*OV5640_Init_Func)(void);
 typedef int32_t (*OV5640_DeInit_Func)(void);
 typedef int32_t (*OV5640_GetTick_Func)(void);
@@ -60,6 +62,7 @@ typedef struct
   OV5640_WriteReg_Func      WriteReg;
   OV5640_ReadReg_Func       ReadReg;
   OV5640_GetTick_Func       GetTick;
+  OV5640_Delay_Func         Delay;
 } OV5640_IO_t;
 
 
