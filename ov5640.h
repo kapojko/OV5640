@@ -145,6 +145,9 @@ typedef struct
 #define OV5640_JPEG                     0x08U   /* Compressed format JPEG          */
 
 /* Polarity */
+// NOTE: for VSYNC, there is a mismatch between
+// datasheet and hardware, 0 is active high and 1 is active low...)
+// See linux kernel also: https://github.com/torvalds/linux/blob/master/drivers/media/i2c/ov5640.c
 #define OV5640_POLARITY_PCLK_LOW        0x00U /* Signal Active Low          */
 #define OV5640_POLARITY_PCLK_HIGH       0x01U /* Signal Active High         */
 #define OV5640_POLARITY_HREF_LOW        0x00U /* Signal Active Low          */
