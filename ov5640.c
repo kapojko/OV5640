@@ -389,7 +389,7 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
   if (pObj->IsInitialized == 0U)
   {
     /* Check if resolution is supported */
-    if ((Resolution > OV5640_R800x480) ||
+    if ((Resolution > OV5640_R1920x1080) ||
         ((PixelFormat != OV5640_RGB565) && (PixelFormat != OV5640_YUV422) &&
          (PixelFormat != OV5640_RGB888) && (PixelFormat != OV5640_Y8) &&
          (PixelFormat != OV5640_JPEG)))
@@ -717,6 +717,58 @@ int32_t OV5640_SetResolution(OV5640_Object_t *pObj, uint32_t Resolution)
   uint32_t index;
   uint8_t tmp;
 
+  /* Initialization sequence for 1080p resolution (1920x1080)*/
+  // NOTE: taken from https://github.com/torvalds/linux/blob/master/drivers/media/i2c/ov5640.c#L1662
+  static const uint16_t OV5640_1080p[][2] =
+  {
+    // {OV5640_TIMING_HS_HIGH, 0x01},
+    // {OV5640_TIMING_HS_LOW, 0x50},
+    // {OV5640_TIMING_VS_HIGH, 0x01},
+    // {OV5640_TIMING_VS_LOW, 0xB2},
+    // {OV5640_TIMING_HW_HIGH, 0x08},
+    // {OV5640_TIMING_HW_LOW, 0xEF},
+    // {OV5640_TIMING_VH_HIGH, 0x05},
+    // {OV5640_TIMING_VH_LOW, 0xF1},
+    // {OV5640_TIMING_HOFFSET_HIGH, 0x00},
+    // {OV5640_TIMING_HOFFSET_LOW, 0x10},
+    // {OV5640_TIMING_VOFFSET_HIGH, 0x00},
+    // {OV5640_TIMING_VOFFSET_LOW, 0x04},
+    {OV5640_TIMING_DVPHO_HIGH, 0x07},
+    {OV5640_TIMING_DVPHO_LOW, 0x80},
+    {OV5640_TIMING_DVPVO_HIGH, 0x04},
+    {OV5640_TIMING_DVPVO_LOW, 0x38},
+    // {OV5640_TIMING_HTS_HIGH, 0x09},
+    // {OV5640_TIMING_HTS_LOW, 0xC4},
+    // {OV5640_TIMING_VTS_HIGH, 0x04},
+    // {OV5640_TIMING_VTS_LOW, 0x60},
+  };
+
+  /* Initialization sequence for 720p resolution (1280x720)*/
+  // NOTE: taken from https://github.com/sipeed/TangPrimer-20K-example/blob/main/Cam2HDMI/OV5640_HDMI720P_DDR3/src/lut_ov5640_rgb565_1280_720.v
+  static const uint16_t OV5640_720p[][2] =
+  {
+    // {OV5640_TIMING_HOFFSET_HIGH, 0x00},
+    // {OV5640_TIMING_HOFFSET_LOW, 0x10},
+    // {OV5640_TIMING_VOFFSET_HIGH, 0x00},
+    // {OV5640_TIMING_VOFFSET_LOW, 0x06},
+    // {OV5640_TIMING_HS_HIGH, 0x01},
+    // {OV5640_TIMING_HS_LOW, 0x00},
+    // {OV5640_TIMING_VS_HIGH, 0x00},
+    // {OV5640_TIMING_VS_LOW, 0x04},
+    // {OV5640_TIMING_HW_HIGH, 0x0A},
+    // {OV5640_TIMING_HW_LOW, 0x3F},
+    // {OV5640_TIMING_VH_HIGH, 0x07},
+    // {OV5640_TIMING_VH_LOW, 0x9F},
+    {OV5640_TIMING_DVPHO_HIGH, 0x05},
+    {OV5640_TIMING_DVPHO_LOW, 0x00},
+    {OV5640_TIMING_DVPVO_HIGH, 0x02},
+    {OV5640_TIMING_DVPVO_LOW, 0xD0},
+    // {OV5640_TIMING_HTS_HIGH, 0x07},
+    // {OV5640_TIMING_HTS_LOW, 0x68},
+    // {OV5640_TIMING_VTS_HIGH, 0x03},
+    // {OV5640_TIMING_VTS_LOW, 0xD8},
+  };
+
   /* Initialization sequence for WVGA resolution (800x480)*/
   static const uint16_t OV5640_WVGA[][2] =
   {
@@ -763,7 +815,7 @@ int32_t OV5640_SetResolution(OV5640_Object_t *pObj, uint32_t Resolution)
   };
 
   /* Check if resolution is supported */
-  if (Resolution > OV5640_R800x480)
+  if (Resolution > OV5640_R1920x1080)
   {
     ret = OV5640_ERROR;
   }
@@ -837,6 +889,32 @@ int32_t OV5640_SetResolution(OV5640_Object_t *pObj, uint32_t Resolution)
           }
         }
         break;
+      case OV5640_R1280x720:
+        for (index = 0; index < (sizeof(OV5640_720p) / 4U); index++)
+        {
+          if (ret != OV5640_ERROR)
+          {
+            tmp = (uint8_t)OV5640_720p[index][1];
+            if (ov5640_write_reg(&pObj->Ctx, OV5640_720p[index][0], &tmp, 1) != OV5640_OK)
+            {
+              ret = OV5640_ERROR;
+            }
+          }
+        }
+        break;
+      case OV5640_R1920x1080:
+        for (index = 0; index < (sizeof(OV5640_1080p) / 4U); index++)
+        {
+          if (ret != OV5640_ERROR)
+          {
+            tmp = (uint8_t)OV5640_1080p[index][1];
+            if (ov5640_write_reg(&pObj->Ctx, OV5640_1080p[index][0], &tmp, 1) != OV5640_OK)
+            {
+              ret = OV5640_ERROR;
+            }
+          }
+        }
+        break;
       default:
         ret = OV5640_ERROR;
         break;
@@ -890,7 +968,17 @@ int32_t OV5640_GetResolution(OV5640_Object_t *pObj, uint32_t *Resolution)
         {
           y_size |= tmp;
 
-          if ((x_size == 800U) && (y_size == 480U))
+          if ((x_size == 1920U) && (y_size == 1080U))
+          {
+            *Resolution = OV5640_R1920x1080;
+            ret = OV5640_OK;
+          }
+          else if ((x_size == 1280U) && (y_size == 720U))
+          {
+            *Resolution = OV5640_R1280x720;
+            ret = OV5640_OK;
+          }
+          else if ((x_size == 800U) && (y_size == 480U))
           {
             *Resolution = OV5640_R800x480;
             ret = OV5640_OK;
@@ -2012,6 +2100,18 @@ int32_t OV5640_SetPCLK(OV5640_Object_t *pObj, uint32_t ClockValue)
       break;
     case OV5640_PCLK_48M:
       tmp = 0x60;
+      ret = ov5640_write_reg(&pObj->Ctx, OV5640_SC_PLL_CONTRL2, &tmp, 1);
+      tmp = 0x03;
+      ret += ov5640_write_reg(&pObj->Ctx, OV5640_SC_PLL_CONTRL3, &tmp, 1);
+      break;
+    case OV5640_PCLK_72M:
+      tmp = 0x60;
+      ret = ov5640_write_reg(&pObj->Ctx, OV5640_SC_PLL_CONTRL2, &tmp, 1);
+      tmp = 0x02;
+      ret += ov5640_write_reg(&pObj->Ctx, OV5640_SC_PLL_CONTRL3, &tmp, 1);
+      break;
+    case OV5640_PCLK_96M:
+      tmp = 0xC0;
       ret = ov5640_write_reg(&pObj->Ctx, OV5640_SC_PLL_CONTRL2, &tmp, 1);
       tmp = 0x03;
       ret += ov5640_write_reg(&pObj->Ctx, OV5640_SC_PLL_CONTRL3, &tmp, 1);

@@ -136,6 +136,8 @@ typedef struct
 #define OV5640_R480x272                 0x02U   /* 480x272 Resolution         */
 #define OV5640_R640x480                 0x03U   /* VGA Resolution             */
 #define OV5640_R800x480                 0x04U   /* WVGA Resolution            */
+#define OV5640_R1280x720                0x05U   /* 720p Resolution           */
+#define OV5640_R1920x1080               0x06U   /* 1080p Resolution           */
 
 /* Camera Pixel Format */
 #define OV5640_RGB565                   0x00U   /* Pixel Format RGB565        */
@@ -200,6 +202,8 @@ typedef struct
 #define OV5640_PCLK_12M                 0x04U   /* Pixel Clock set to 12Mhz   */
 #define OV5640_PCLK_24M                 0x08U   /* Pixel Clock set to 24Mhz   */
 #define OV5640_PCLK_48M                 0x09U   /* Pixel Clock set to 48MHz   */
+#define OV5640_PCLK_72M                 0x10U   /* Pixel Clock set to 72MHz   */
+#define OV5640_PCLK_96M                 0x11U   /* Pixel Clock set to 96MHz   */
 
 /* Mode */
 #define PARALLEL_MODE                   0x00U   /* Parallel Interface Mode */
