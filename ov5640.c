@@ -237,7 +237,7 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
     {OV5640_FORMAT_CTRL00, 0x6F},
     {OV5640_FORMAT_MUX_CTRL, 0x01}, // ISP RGB 
     {OV5640_JPG_MODE_SELECT, 0x02}, // JPEG mode 2, was 0x03
-    {OV5640_JPEG_CTRL07, 0x04},
+    {OV5640_JPEG_CTRL07, 0x04}, // Quantization scale
     {0x440e, 0x00},
     {0x460b, 0x35},
     {0x460c, 0x23},
